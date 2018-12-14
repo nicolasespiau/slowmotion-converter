@@ -1,0 +1,11 @@
+version: '3.0'
+
+services:
+  slowmotion-converter:
+    container_name: slowmotion-converter
+    image: local/slowmotion-converter:dev
+    tty: true
+    volumes:
+      - ./:/var/www
+      - /var/www/node_modules
+    command: sh
