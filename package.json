@@ -1,0 +1,13 @@
+{
+  "name": "slowmotion-converter",
+  "version": "1.0.0",
+  "description": "This project provides a watcher that watch a folder and creates a slow motion video from every video appearing in that folder based on given params and conditions",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha -b"
+  },
+  "author": "Nicolas ESPIAU",
+  "license": "ISC"
+}
