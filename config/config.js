@@ -2,5 +2,7 @@
 
 module.exports = {
     dirToWatch: "vids",
-    filePattern: /^replay.+/
+    destDir: "rendered",
+    filePattern: /^replay.*/,
+    frFactor: process.env.FR_FACTOR || 0.5
 };

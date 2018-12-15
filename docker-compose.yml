@@ -3,9 +3,11 @@ version: '3.0'
 services:
   slowmotion-converter:
     container_name: slowmotion-converter
-    image: local/slowmotion-converter:dev
+    image: local/slowmotion-converter
     tty: true
+    restart: always
     volumes:
       - ./:/var/www
-      - /var/www/node_modules
-    command: sh
+      - /Users/BonjourJohn/Movies/OBS/replays/:/var/www/vids/
+      - /Users/BonjourJohn/Movies/OBS/slomo/:/var/www/rendered/
+  

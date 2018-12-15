@@ -24,14 +24,18 @@ FS.watch(config.dirToWatch, (eventType, filename) => {
 
         videoInfoProcess.on('close', () => {
             frameRate = (/Video Frame Rate *: *([\d\.]+)/gi.exec(videoInfo))[1];
-            convert(filename, parseInt(frameRate));
+            try {
+                convert(filename, parseInt(frameRate));
+            } catch (e) {
+                process.stdout.write("ERR:", e);
+            }
         });
     }
 });
 
 function convert(filename, frameRate) {
     console.log(Path.join(config.dirToWatch, filename));
-    const videoConverting = spawn("ffmpeg", ["-i", Path.join(config.dirToWatch, filename), "-vf", "setpts=2.0*PTS", "-r", 2*frameRate, filename.replace(/(.+)\.([\d\w]+)/, Path.join(config.destDir, '$1_slomo.$2'))]);
+    const videoConverting = spawn("ffmpeg", ["-i", Path.join(config.dirToWatch, filename), "-vf", `setpts=${1/config.frFactor}*PTS`, "-r", (1/config.frFactor)*frameRate, filename.replace(/(.+)\.([\d\w]+)/, Path.join(config.destDir, '$1_slomo.$2'))]);
 
     let conversionInfo;
     let err;
@@ -45,6 +49,6 @@ function convert(filename, frameRate) {
     });
 
     videoConverting.on('close', () => {
-        console.log(conversionInfo);
+        console.log(`${filename} converted`);
     });
 }
