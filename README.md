@@ -70,6 +70,9 @@ you local machine, a slow motion version will be copied into `/PATH/WHERE/YOU/WA
 
 You now only have to set up a VLC source in your replays scene in OBS.
 
+> ATTENTION: for this to work, your replay files name have to be prefixed by the token:
+> `replay_`. Ex.: `replay_20181215-130627.mp4`
+
 #### Non virtual method
 
 > !! This method has not been tested
