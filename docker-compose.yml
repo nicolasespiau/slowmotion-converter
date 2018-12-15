@@ -10,4 +10,4 @@ services:
       - ./:/var/www
       - /Users/BonjourJohn/Movies/OBS/replays/:/var/www/vids/
       - /Users/BonjourJohn/Movies/OBS/slomo/:/var/www/rendered/
-  
+

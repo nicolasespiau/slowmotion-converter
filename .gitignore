@@ -1,3 +1,5 @@
 .idea
 node_modules
 vids
+rendered
+.DS_Store

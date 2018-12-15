@@ -6,4 +6,4 @@ RUN apk add ffmpeg exiftool
 ADD ./ /var/www
 WORKDIR /var/www
 
-#RUN npm i
+CMD ["node", "index.js"]
