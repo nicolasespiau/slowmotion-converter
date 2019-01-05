@@ -8,6 +8,5 @@ services:
     restart: always
     volumes:
       - ./:/var/www
-      - /Users/BonjourJohn/Movies/OBS/replays/:/var/www/vids/
-      - /Users/BonjourJohn/Movies/OBS/slomo/:/var/www/rendered/
-
+      - /Users/BonjourJohn/Movies/OBS/:/var/www/vids/
+    command: sh

@@ -1,54 +1,55 @@
 'use strict';
 
-const FS = require('fs');
-const Path = require('path');
-const {spawn} = require('child_process');
+const FS = require('fs'),
+  Path = require('path'),
+  spawnSync = require('child_process').spawnSync,
+  Events = require('events');
 
+const EventHandler = new Events();
 const config = require('./config/config');
 
 FS.watch(config.dirToWatch, (eventType, filename) => {
-    if (eventType === "rename" && config.filePattern.test(filename)) {
-        //get framerate
-        const videoInfoProcess = spawn("exiftool", [Path.join(config.dirToWatch, filename)]);
-        let videoInfo;
-        let frameRate;
-        let err;
+  console.log(eventType, filename);
 
-        videoInfoProcess.stdout.on('data', data => {
-            videoInfo += data;
-        });
-
-        videoInfoProcess.stderr.on('data', data => {
-            err += data;
-        });
-
-        videoInfoProcess.on('close', () => {
-            frameRate = (/Video Frame Rate *: *([\d\.]+)/gi.exec(videoInfo))[1];
-            try {
-                convert(filename, parseInt(frameRate));
-            } catch (e) {
-                process.stdout.write("ERR:", e);
-            }
-        });
-    }
+  if (eventType === "rename" && config.filePattern.test(filename) && FS.existsSync(Path.join(config.dirToWatch, filename))) {
+    console.time("fullprocess");
+    console.time("cut");
+    const cutFilename = cut(filename);
+    console.timeEnd("cut");
+    console.time("framerate");
+    const framerate = getFramerate(cutFilename);
+    console.timeEnd("framerate");
+    console.time("convert");
+    const slowmoFilename = convert(cutFilename, framerate);
+    console.timeEnd("convert");
+    console.time("cleanFiles");
+    const ts = new Date().toISOString().replace(/[\D]/g, '');
+    //move original file to archive
+    FS.renameSync(Path.join(config.dirToWatch, filename), Path.join(config.archiveDir, filename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2')));
+    //move cut file to archive
+    FS.renameSync(Path.join(config.destDir, cutFilename), Path.join(config.archiveDir, cutFilename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2')));
+    //copy slow mo file
+    const tsSlomoFilename = slowmoFilename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2');
+    FS.copyFileSync(Path.join(config.destDir, slowmoFilename), Path.join(config.archiveDir, tsSlomoFilename));
+    console.timeEnd("cleanFiles");
+    console.timeEnd("fullprocess");
+  }
 });
 
+function getFramerate(filename) {
+  const spawnRes = spawnSync("exiftool", [Path.join(config.destDir, filename)]);
+  const videoInfo = spawnRes.stdout;
+  return (/Video Frame Rate *: *([\d\.]+)/gi.exec(videoInfo))[1];
+}
+
 function convert(filename, frameRate) {
-    console.log(Path.join(config.dirToWatch, filename));
-    const videoConverting = spawn("ffmpeg", ["-i", Path.join(config.dirToWatch, filename), "-vf", `setpts=${1/config.frFactor}*PTS`, "-r", (1/config.frFactor)*frameRate, filename.replace(/(.+)\.([\d\w]+)/, Path.join(config.destDir, '$1_slomo.$2'))]);
+  const slowmoFilename = filename.replace(/(.+)\.([\d\w]+)/, '$1_slomo.$2');
+  spawnSync("ffmpeg", ["-i", Path.join(config.destDir, filename), "-vf", `setpts=${1 / config.frFactor}*PTS`, "-r", (1 / config.frFactor) * frameRate, Path.join(config.destDir, slowmoFilename), "-y"]);
+  return slowmoFilename;
+}
 
-    let conversionInfo;
-    let err;
-
-    videoConverting.stdout.on('data', data => {
-        conversionInfo += data;
-    });
-
-    videoConverting.stderr.on('data', data => {
-        err += data;
-    });
-
-    videoConverting.on('close', () => {
-        console.log(`${filename} converted`);
-    });
+function cut(input) {
+  const output = input.replace(/(.+)\.([\d\w]+)/, 'replay_cut.$2');
+  spawnSync("ffmpeg", ["-sseof", "-"+config.secondsToKeep, "-y", "-i", Path.join(config.dirToWatch, input), "-an", Path.join(config.destDir, output)]);
+  return output;
 }

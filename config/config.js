@@ -1,8 +1,10 @@
 'use extract';
 
 module.exports = {
-    dirToWatch: "vids",
-    destDir: "rendered",
-    filePattern: /^replay.*/,
-    frFactor: process.env.FR_FACTOR || 0.5
+  dirToWatch: process.env.DIR_TO_WATCH || "vids/input",
+  destDir: process.env.DEST_DIR || "vids/rendered",
+  archiveDir: process.env.ARCHIVE_DIR || "vids/archives",
+  filePattern: /^replay.*/,
+  frFactor: process.env.FR_FACTOR || 0.5,
+  secondsToKeep: process.env.SECONDS_TO_KEEP || 4
 };
