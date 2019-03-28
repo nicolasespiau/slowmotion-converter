@@ -24,13 +24,16 @@ FS.watch(config.dirToWatch, (eventType, filename) => {
     console.timeEnd("convert");
     console.time("cleanFiles");
     const ts = new Date().toISOString().replace(/[\D]/g, '');
+    //copy original file
+    const tsNomoFilename = filename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2');
+    FS.copyFileSync(Path.join(config.dirToWatch, filename), Path.join(config.nomoDir, tsNomoFilename));
     //move original file to archive
     FS.renameSync(Path.join(config.dirToWatch, filename), Path.join(config.archiveDir, filename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2')));
     //move cut file to archive
     FS.renameSync(Path.join(config.destDir, cutFilename), Path.join(config.archiveDir, cutFilename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2')));
     //copy slow mo file
     const tsSlomoFilename = slowmoFilename.replace(/(.+)\.([\d\w]+)/, '$1_'+ts+'.$2');
-    FS.copyFileSync(Path.join(config.destDir, slowmoFilename), Path.join(config.archiveDir, tsSlomoFilename));
+    FS.copyFileSync(Path.join(config.slomoDir, slowmoFilename), Path.join(config.archiveDir, tsSlomoFilename));
     console.timeEnd("cleanFiles");
     console.timeEnd("fullprocess");
   }
@@ -44,7 +47,7 @@ function getFramerate(filename) {
 
 function convert(filename, frameRate) {
   const slowmoFilename = filename.replace(/(.+)\.([\d\w]+)/, '$1_slomo.$2');
-  spawnSync("ffmpeg", ["-i", Path.join(config.destDir, filename), "-vf", `setpts=${1 / config.frFactor}*PTS`, "-r", (1 / config.frFactor) * frameRate, Path.join(config.destDir, slowmoFilename), "-y"]);
+  spawnSync("ffmpeg", ["-i", Path.join(config.destDir, filename), "-vf", `setpts=${1 / config.frFactor}*PTS`, "-r", (1 / config.frFactor) * frameRate, Path.join(config.slomoDir, slowmoFilename), "-y"]);
   return slowmoFilename;
 }
 

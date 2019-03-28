@@ -9,4 +9,3 @@ services:
     volumes:
       - ./:/var/www
       - /Users/BonjourJohn/Movies/OBS/:/var/www/vids/
-    command: sh
